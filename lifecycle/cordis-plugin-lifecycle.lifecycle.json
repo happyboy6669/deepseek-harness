@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "cordis-demo 插件生命周期",
+    "locale": "zh-CN",
+    "viewBox": [1070, 630],
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "main-rail", "label": "主轨五阶段", "focus": ["compose", "mount", "ready", "turn", "disposed"], "note": "组装到拆卸，五个阶段串起一次完整运行。" },
+      { "id": "dependency-wait", "label": "依赖等待", "focus": ["mount", "pending", "ready", "bootFailed"], "note": "依赖未就绪先挂起重试，永远缺依赖则启动即失败。" },
+      { "id": "turn-loop", "label": "回合与旁路", "focus": ["turn", "denied", "logged"], "note": "策略在守卫点短路否决，错误作为工具结果回到模型。" },
+      { "id": "teardown", "label": "拆卸与出口", "focus": ["logged", "disposed", "ctxInvalid"], "note": "日志留存可回放，拆卸后上下文彻底失效。" }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "生命周期主轨" },
+    { "id": "side", "label": "挂起与旁路" },
+    { "id": "terminal", "label": "终态出口" }
+  ],
+  "states": [
+    { "id": "compose", "type": "start", "label": "组装", "sublabel": "bundle → profile → patch", "lane": "main", "col": 0, "step": "01", "tag": "行叠加" },
+    { "id": "mount", "type": "active", "label": "挂载", "sublabel": "ctx.mount() 按行入队", "lane": "main", "col": 1, "step": "02", "tag": "激活" },
+    { "id": "ready", "type": "active", "label": "就绪", "sublabel": "服务以稳定 key 挂上 ctx", "lane": "main", "col": 2, "step": "03", "tag": "依赖驱动" },
+    { "id": "turn", "type": "decision", "label": "回合执行", "sublabel": "llm.complete → execute", "lane": "main", "col": 3, "step": "04", "tag": "循环" },
+    { "id": "disposed", "type": "success", "label": "已拆卸", "sublabel": "effects 逆序撤销", "lane": "main", "col": 4, "step": "05", "tag": "可逆" },
+    { "id": "pending", "type": "waiting", "label": "依赖挂起", "sublabel": "inject 未就绪，反复重试", "lane": "side", "col": 0, "tag": "挂起" },
+    { "id": "denied", "type": "failure", "label": "工具被否决", "sublabel": "waterfall 未调 next()", "lane": "side", "col": 1, "tag": "可恢复" },
+    { "id": "logged", "type": "neutral", "label": "会话日志", "sublabel": "model-visible iff logged", "lane": "side", "col": 2, "tag": "可回放" },
+    { "id": "bootFailed", "type": "failure", "label": "启动失败", "sublabel": "依赖无法满足，立即抛错", "lane": "terminal", "col": 0, "tag": "终态" },
+    { "id": "ctxInvalid", "type": "failure", "label": "上下文失效", "sublabel": "访问 ctx.x 直接抛错", "lane": "terminal", "col": 2, "tag": "终态" }
+  ],
+  "transitions": [
+    { "id": "mount-suspend", "from": "mount", "to": "pending", "variant": "dashed", "fromSide": "bottom", "toSide": "left", "via": [[248, 307]] },
+    { "id": "pending-activate", "from": "pending", "to": "ready", "variant": "emphasis", "fromSide": "top", "toSide": "bottom", "route": "straight" },
+    { "id": "pending-fatal", "from": "pending", "to": "bootFailed", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" },
+    { "id": "turn-denied", "from": "turn", "to": "denied", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" },
+    { "id": "denied-feedback", "from": "denied", "to": "turn", "variant": "emphasis", "fromSide": "left", "toSide": "left", "via": [[475, 307], [475, 157]] },
+    { "id": "turn-logged", "from": "turn", "to": "logged", "variant": "default", "fromSide": "top", "toSide": "right", "via": [[556, 90], [800, 90], [800, 307]] },
+    { "id": "logged-teardown", "from": "logged", "to": "disposed", "variant": "default", "fromSide": "top", "toSide": "bottom", "route": "straight" },
+    { "id": "disposed-invalid", "from": "disposed", "to": "ctxInvalid", "variant": "security", "fromSide": "left", "toSide": "left", "via": [[630, 157], [630, 479]] }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "主轨五阶段",
+      "items": [
+        "组装：三层 patch 叠出 9 行",
+        "挂载：依赖就绪才激活",
+        "回合执行：请求与工具调用循环"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "挂起与恢复",
+      "items": [
+        "依赖未就绪：挂起重试",
+        "工具被否决：错误回给模型",
+        "依赖永不满足：启动即失败"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "日志与拆卸",
+      "items": [
+        "模型可见的输入都能从日志重建",
+        "拆卸：effects 逆序撤销",
+        "拆卸后访问 ctx.x 直接抛错"
+      ]
+    }
+  ]
+}
