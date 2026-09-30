@@ -1,0 +1,67 @@
+# 减法 overlay：把第 8 层「代理增强」整层从 headless profile 上卸下来。
+# 用法：pnpm dsh --profile headless --patch learn/examples/03-overlays/subtract.yml --dump-config
+# 原理：补丁按 id 命中下层行，disabled: true 表示"不挂载"——行仍在账本上，可再被更上层恢复。
+
+# ── 子代理 ──
+- id: subagent
+  disabled: true
+- id: subagent-spawn-in-process
+  disabled: true
+- id: subagent-fork-in-process
+  disabled: true
+- id: tool-subagent-control
+  disabled: true
+- id: tool-subagent-list-agents
+  disabled: true
+- id: tool-subagent
+  disabled: true
+- id: tool-subagent-fork
+  disabled: true
+
+# ── 上下文压缩 ──
+- id: compaction-basic
+  disabled: true
+- id: command-compact
+  disabled: true
+- id: tool-result-pruner
+  disabled: true
+- id: image-offload
+  disabled: true
+
+# ── 技能 ──
+- id: skill
+  disabled: true
+- id: skill-filesystem
+  disabled: true
+- id: tool-skill
+  disabled: true
+
+# ── 目标与计划 ──
+- id: goal
+  disabled: true
+- id: goal-round-driver
+  disabled: true
+- id: command-goal
+  disabled: true
+- id: tool-goal
+  disabled: true
+- id: plan-mode
+  disabled: true
+
+# ── 工作流 ──
+- id: ptc-runtime
+  disabled: true
+- id: workflow-ptc
+  disabled: true
+- id: tool-workflow
+  disabled: true
+
+# ── 网页工具 ──
+- id: web
+  disabled: true
+- id: web-search-deepseek
+  disabled: true
+- id: web-fetch-http
+  disabled: true
+- id: tool-web
+  disabled: true

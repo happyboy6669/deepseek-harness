@@ -1,0 +1,10 @@
+# 服务 + 事件 + 配置：三个插件互相找到彼此
+- name: './greeter.ts'
+  config:
+    greeting: 你好
+
+- name: './formatter.ts'
+
+- name: './announcer.ts'
+  config:
+    targets: ['世界', 'Cordis', '加班的方案']

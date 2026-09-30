@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "deepseek-harness 项目结构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "deepseek-harness-structure.html",
+    "repository": {
+      "url": "https://github.com/happyboy6669/deepseek-harness",
+      "link_mode": "local-only",
+      "revision": "477b4f420553e8a52c2fbccc464d7561b239c443"
+    },
+    "viewBox": [1340, 750]
+  },
+  "components": [
+    { "id": "dsh_cli", "type": "frontend", "label": "dsh CLI", "sublabel": "apps/cli · profile 启动", "pos": [80, 100], "size": [160, 64], "sources": [{ "path": "apps/cli/package.json" }] },
+    { "id": "web_gui", "type": "frontend", "label": "Web / Desktop 客户端", "sublabel": "apps/web · apps/desktop", "pos": [300, 100], "size": [190, 64], "sources": [{ "path": "apps/web/package.json" }, { "path": "apps/desktop/package.json" }] },
+    { "id": "python_sdk", "type": "external", "label": "Python SDK / 运行时", "sublabel": "python/", "pos": [560, 100], "size": [180, 64], "sources": [{ "path": "python/README.md" }] },
+    { "id": "native_addons", "type": "backend", "label": "Node 原生扩展", "sublabel": "native/ · node-addon-system", "pos": [830, 100], "size": [190, 64], "sources": [{ "path": "native/README.md" }] },
+    { "id": "docs_site", "type": "external", "label": "文档站", "sublabel": "docs/ · website/ VitePress", "pos": [1100, 100], "size": [180, 64], "sources": [{ "path": "docs/architecture.md" }, { "path": "website/package.json" }] },
+    { "id": "cordis_vendor", "type": "backend", "label": "Cordis 插件运行时", "sublabel": "vendor/ · ctx.effect()", "pos": [80, 456], "size": [160, 64], "sources": [{ "path": "vendor/README.md" }] },
+    { "id": "sdk_host", "type": "backend", "label": "JSON-RPC SDK / Host", "sublabel": "packages/sdk · host · client", "pos": [340, 290], "size": [180, 64], "sources": [{ "path": "packages/sdk/client/package.json" }, { "path": "packages/host/frontend-static/package.json" }] },
+    { "id": "api_bff", "type": "backend", "label": "Remote BFF", "sublabel": "packages/api · gateway", "pos": [620, 290], "size": [180, 64], "sources": [{ "path": "packages/api/gateway/package.json" }] },
+    { "id": "agent_core", "type": "backend", "label": "Agent 核心", "sublabel": "packages/core · agent/session API", "tag": "主链路", "pos": [340, 450], "size": [200, 76], "sources": [{ "path": "packages/core/agent-loop/package.json" }, { "path": "packages/core/agent/package.json" }] },
+    { "id": "session_store", "type": "database", "label": "持久会话", "sublabel": "packages/core/session · SQLite", "pos": [620, 450], "size": [180, 64], "sources": [{ "path": "packages/core/session/package.json" }] },
+    { "id": "tool_plugins", "type": "backend", "label": "能力插件", "sublabel": "shell · fs · lsp · web 等", "pos": [340, 630], "size": [200, 64], "sources": [{ "path": "packages/shell/shell/package.json" }, { "path": "packages/fs/fs/package.json" }, { "path": "packages/browser-use/browser-use/package.json" }] },
+    { "id": "llm_providers", "type": "cloud", "label": "模型提供方", "sublabel": "packages/llm · DEEPSEEK_API_KEY", "pos": [620, 630], "size": [180, 64], "sources": [{ "path": "packages/llm/llm/package.json" }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "apps/ 应用入口", "wraps": ["dsh_cli", "web_gui"], "pad": 20 },
+    { "kind": "region", "label": "packages/ · @deepseek-ai/dsh-* 工作区", "wraps": ["sdk_host", "api_bff", "agent_core", "session_store", "tool_plugins", "llm_providers"], "pad": 24 },
+    { "kind": "region", "label": "vendor/ 内置 Cordis", "wraps": ["cordis_vendor"], "pad": 16 },
+    { "kind": "region", "label": "独立顶层目录", "wraps": ["python_sdk", "native_addons", "docs_site"], "pad": 20 }
+  ],
+  "connections": [
+    { "from": "dsh_cli", "to": "cordis_vendor", "label": "加载 profile", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "from": "cordis_vendor", "to": "agent_core", "label": "组合插件", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "from": "agent_core", "to": "llm_providers", "label": "模型请求", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "from": "agent_core", "to": "tool_plugins", "label": "工具调用", "fromSide": "bottom", "toSide": "top", "labelDy": 92 },
+    { "from": "agent_core", "to": "session_store", "label": "会话事件", "variant": "dashed", "fromSide": "right", "toSide": "left" },
+    { "from": "web_gui", "to": "sdk_host", "label": "JSON-RPC", "fromSide": "bottom", "toSide": "top" },
+    { "from": "sdk_host", "to": "agent_core", "label": "驱动会话", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "from": "python_sdk", "to": "api_bff", "label": "远程接入", "fromSide": "bottom", "toSide": "top" },
+    { "from": "api_bff", "to": "agent_core", "label": "接入会话", "variant": "dashed", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "packages/ 能力分组", "items": ["core：agent 循环与 session API", "llm：模型提供方（DEEPSEEK_API_KEY）", "shell/fs/lsp/web/browser-use/computer-use 等工具能力", "session/session-query：持久会话与检索", "sdk/host/client：JSON-RPC 与 GUI 宿主"] },
+    { "dot": "emerald", "title": "启动与运行", "items": ["仅 dsh profile 可启动应用（pnpm dsh --profile headless）", "apps/：cli、web、desktop、desktop-host", "vendor/ 内置 Cordis，插件经 ctx.effect() 注册"] },
+    { "dot": "amber", "title": "其余顶层目录", "items": ["python/：Python SDK 与运行时", "native/：@deepseek-ai/node-addon-system", "docs/ + website/：文档与 VitePress 投影", "scripts/ · benchmarks/ · snapshots/：门禁与回放", ".agents/：智能体工作流笔记"] }
+  ]
+}
